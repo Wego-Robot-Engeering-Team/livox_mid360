@@ -79,7 +79,8 @@ def _setup(context):
         actions.append(Node(
             package="livox_mid360", executable="cloud_leveling_node",
             name="cloud_leveling_node", output="screen",
-            parameters=[value("leveling_config"), common, {"acceleration_scale": acceleration_scale}],
+            parameters=[value("leveling_config"), common,
+                        {"acceleration_scale": acceleration_scale, "deskew": _boolean(context, "deskew")}],
             remappings=[("points", value("points_topic")), ("imu", value("imu_topic")),
                         ("points_leveled", value("leveled_topic")),
                         ("imu_orientation", "/livox/imu_orientation")],
@@ -103,6 +104,7 @@ def generate_launch_description():
     share = Path(get_package_share_directory("livox_mid360"))
     defaults = [
         ("leveling", "false", "Run the separate cloud leveling process"),
+        ("deskew", "true", "Correct rotation during each scan using per-point absolute timestamps"),
         ("driver", "true", "Start hardware driver; false for rosbag replay"),
         ("rviz", "true", "Start RViz"),
         ("imu_visualization", LaunchConfiguration("rviz"), "Publish IMU arrows and numeric values"),
