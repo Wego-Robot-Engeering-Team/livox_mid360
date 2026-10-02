@@ -8,8 +8,8 @@ IMU로 추정한 기울기를 이용해 포인트클라우드를 실시간으로
 
 | 브랜치 | ROS 2 | 운영체제 | 내용 |
 | --- | --- | --- | --- |
-| [humble](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/tree/humble) | Humble | Ubuntu 22.04 | 소스, 빌드 스크립트, 실행·검증 안내 |
-| [jazzy](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/tree/jazzy) | Jazzy | Ubuntu 24.04 | 소스, 빌드 스크립트, 실행·검증 안내 |
+| [humble](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/tree/humble) | Humble | Ubuntu 22.04 | 소스, 실행·검증 안내 |
+| [jazzy](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/tree/jazzy) | Jazzy | Ubuntu 24.04 | 소스, 실행·검증 안내 |
 
 ## 구성
 
@@ -63,23 +63,22 @@ Humble에서는 `-b humble`을 사용합니다.
 ```text
 sensors_ws/src/
 ├── livox_mid360/                     # Git 저장소, 루트에는 package.xml 없음
-│   ├── README.md, dependencies.repos, scripts/
+│   ├── README.md, dependencies.repos
 │   ├── livox_mid360/                 # 우리 기능 패키지
 │   │   ├── package.xml, CMakeLists.txt
 │   │   └── src/, include/, launch/, config/, test/
-│   ├── livox_ros_driver2/            # 공식 드라이버·SDK 빌드용 패키지
-│   │   ├── package.xml
-│   │   └── CMakeLists.txt
-│   └── third_party/                  # 공식 원본 소스
-│       ├── COLCON_IGNORE
-│       ├── livox_ros_driver2/
-│       └── Livox-SDK2/
+│   └── third_party/                  # 공식 소스와 SDK·드라이버 빌드 설정
+│       ├── package.xml, CMakeLists.txt # ROS 패키지 이름: livox_ros_driver2
+│       ├── livox_ros_driver2/        # 공식 드라이버 checkout
+│       └── Livox-SDK2/               # 공식 SDK checkout
 └── <다른 센서 저장소>/
 ```
 
 우리 노드는 `cloud_leveling_node`와 `imu_visualizer_node`입니다.
-패키지는 하나로 관리하고 프로세스는 따로 실행하므로 보정 노드의 추가 부하를 측정할 수 있습니다.
+기능 패키지는 하나로 관리하고 프로세스는 따로 실행하므로 보정 노드의 추가 부하를 측정할 수 있습니다.
 외부 코드의 주소·커밋은 `.repos`에 기록하고 저장소 내부 `third_party`로 가져옵니다.
-드라이버 빌드용 패키지가 공식 SDK와 드라이버 소스를 함께 빌드·설치합니다.
-초기 의존성 준비 후 `sensors_ws`에서 일반 `colcon build`를 사용합니다.
+`third_party`의 빌드 설정이 공식 SDK와 드라이버 원본을 수정 없이 함께 빌드·설치합니다.
+처음 한 번 `vcs import . < dependencies.repos`와 시스템 의존성 설치를 수행한 뒤,
+`sensors_ws`에서 일반 `colcon build`를 사용합니다. 별도 SDK 설치나 빌드 스크립트는 필요하지 않습니다.
+부하 측정 도구는 `ros2 run livox_mid360 measure_process`, 검증은 `colcon test`로 실행합니다.
 자세한 의존성 준비와 실행·검증 절차는 각 개발 브랜치 README를 따릅니다.
