@@ -1,6 +1,6 @@
 # Livox MID-360
 
-Ubuntu 22.04 / ROS 2 Humble가 설치된 환경 기준입니다. [ROS 2 설치 안내](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html)
+Ubuntu 22.04 / ROS 2 Humble가 설치된 환경 기준입니다.
 `~/wego_ws`는 예시 워크스페이스 경로입니다.
 
 ## 1. 설치
