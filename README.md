@@ -14,7 +14,8 @@ cd ~/sensors_ws
 colcon build
 source install/setup.bash
 
-# PC NIC: 192.168.1.5/24. 모드는 하나씩 실행하며 초기화 중 정지.
+# IP 설정: livox_mid360/config/MID360_config.json. PC NIC도 같은 주소로 설정.
+# 모드는 하나씩 실행하며 초기화 중 정지.
 ros2 launch livox_mid360 bringup.launch.py
 ros2 launch livox_mid360 leveled.launch.py
 # 점별 timestamp가 없는 데이터는 leveled.launch.py에 deskew:=false 추가.
