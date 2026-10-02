@@ -1,7 +1,7 @@
 # Livox MID-360
 
 Ubuntu 24.04 / ROS 2 Jazzy가 설치된 환경 기준입니다. [ROS 2 설치 안내](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html)
-`~/sensors_ws`는 예시 워크스페이스 경로입니다.
+`~/wego_ws`는 예시 워크스페이스 경로입니다.
 
 ## 1. 설치
 
@@ -11,9 +11,9 @@ source /opt/ros/jazzy/setup.bash
 sudo apt install build-essential git python3-vcstool python3-colcon-common-extensions python3-rosdep
 
 # Jazzy 브랜치와 고정 버전의 공식 SDK·드라이버 받기
-mkdir -p ~/sensors_ws/src
-git clone -b jazzy https://github.com/Wego-Robot-Engeering-Team/livox_mid360.git ~/sensors_ws/src/livox_mid360
-cd ~/sensors_ws/src/livox_mid360
+mkdir -p ~/wego_ws/src
+git clone -b jazzy https://github.com/Wego-Robot-Engeering-Team/livox_mid360.git ~/wego_ws/src/livox_mid360
+cd ~/wego_ws/src/livox_mid360
 vcs import . < dependencies.repos
 
 # ROS 의존성 설치 — rosdep은 최초 사용 시 자동 초기화
@@ -22,7 +22,7 @@ rosdep update
 rosdep install --from-paths livox_mid360 third_party --ignore-src --rosdistro jazzy -r -y
 
 # 워크스페이스 빌드
-cd ~/sensors_ws
+cd ~/wego_ws
 colcon build
 ```
 
@@ -35,14 +35,14 @@ colcon build
 ```bash
 # 원본 점군·IMU 수신과 RViz — 새 터미널에서 실행
 source /opt/ros/jazzy/setup.bash
-source ~/sensors_ws/install/setup.bash
+source ~/wego_ws/install/setup.bash
 ros2 launch livox_mid360 bringup.launch.py
 ```
 
 ```bash
 # IMU 수평·스캔 회전 보정과 RViz — 기존 런치를 Ctrl+C로 종료한 뒤 실행
 source /opt/ros/jazzy/setup.bash
-source ~/sensors_ws/install/setup.bash
+source ~/wego_ws/install/setup.bash
 ros2 launch livox_mid360 leveled.launch.py
 ```
 
