@@ -14,16 +14,15 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-get_filename_component(repository_dir "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
-set(driver_source "${repository_dir}/third_party/livox_ros_driver2")
-set(sdk_source "${repository_dir}/third_party/Livox-SDK2")
+set(driver_source "${CMAKE_CURRENT_SOURCE_DIR}/livox_ros_driver2")
+set(sdk_source "${CMAKE_CURRENT_SOURCE_DIR}/Livox-SDK2")
 foreach(required_file
     "${driver_source}/src/driver_node.cpp"
     "${driver_source}/msg/CustomMsg.msg"
     "${sdk_source}/sdk_core/CMakeLists.txt")
   if(NOT EXISTS "${required_file}")
     message(FATAL_ERROR
-      "Missing official sources: ${required_file}. Run ${repository_dir}/scripts/setup_dependencies.sh first.")
+      "Missing official sources: ${required_file}. Run vcs import . < dependencies.repos from the repository root first.")
   endif()
 endforeach()
 
@@ -39,8 +38,6 @@ find_package(rcl_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(PCL REQUIRED)
 find_package(Threads REQUIRED)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(APR apr-1)
 
 # Build and install SDK libraries in the same colcon package prefix as the
 # driver. Referencing their CMake targets gives the correct build ordering and
@@ -86,14 +83,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   "${driver_source}/src"
   "${driver_source}/3rdparty"
   ${PCL_INCLUDE_DIRS}
-  ${APR_INCLUDE_DIRS}
 )
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp rclcpp_components std_msgs builtin_interfaces sensor_msgs
   rcutils pcl_conversions rcl_interfaces)
 target_link_libraries(${PROJECT_NAME}
   livox_lidar_sdk_shared "${cpp_typesupport_target}"
-  ${PCL_LIBRARIES} ${APR_LIBRARIES})
+  ${PCL_LIBRARIES})
 set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN")
 
 rclcpp_components_register_node(${PROJECT_NAME}
@@ -102,8 +98,10 @@ rclcpp_components_register_node(${PROJECT_NAME}
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
 install(DIRECTORY "${driver_source}/config" "${driver_source}/launch_ROS2"
   DESTINATION share/${PROJECT_NAME})
-install(FILES LICENSE "${sdk_source}/LICENSE.txt"
-  DESTINATION share/${PROJECT_NAME}/licenses)
+install(FILES "${driver_source}/LICENSE.txt"
+  DESTINATION share/${PROJECT_NAME}/licenses RENAME livox_ros_driver2.txt)
+install(FILES "${sdk_source}/LICENSE.txt"
+  DESTINATION share/${PROJECT_NAME}/licenses RENAME Livox-SDK2.txt)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_dependencies(rosidl_default_runtime)
 ament_package()
