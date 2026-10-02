@@ -5,6 +5,14 @@ Ubuntu 22.04 / ROS 2 Humble가 설치된 환경 기준입니다.
 
 ## 1. 설치
 
+**PC 이더넷 설정**
+
+센서에 연결한 이더넷을 Ubuntu **설정 → 네트워크 → 유선 설정 → IPv4 → 수동**으로 설정합니다.
+주소 `192.168.1.5`, 넷마스크 `255.255.255.0`, 게이트웨이는 비웁니다. 적용 후 유선 연결을 껐다 켭니다.
+PC 주소는 [SDK 설정](livox_mid360/config/MID360_config.json)의 `host_ip`와 같아야 합니다.
+
+**빌드**
+
 ```bash
 # ROS 2 환경과 컴파일·의존성 관리 도구
 source /opt/ros/humble/setup.bash
@@ -28,8 +36,6 @@ colcon build
 
 ## 2. 실행
 
-기본 설정은 PC `192.168.1.5/24`, 센서 `192.168.1.136`입니다. PC 이더넷 주소를 맞추고 전원·이더넷을 연결합니다.
-주소가 다르면 [SDK 설정](livox_mid360/config/MID360_config.json)의 `host_ip`(PC)와 `lidar_configs`의 `ip`(센서)를 수정하고 다시 빌드합니다.
 아래 두 모드 중 하나만 실행합니다. 보정 초기화 중에는 센서를 정지시켜 둡니다.
 
 ```bash
@@ -46,6 +52,5 @@ source ~/wego_ws/install/setup.bash
 ros2 launch livox_mid360 leveled.launch.py
 ```
 
-RViz 없이 실행하려면 `rviz:=false`, 점별 시각이 없는 데이터는 `deskew:=false`를 추가합니다.
-가속도가 이미 m/s²인 데이터는 `acceleration_scale:=1.0`을 추가합니다.
+RViz 없이 실행하려면 `rviz:=false`를 추가합니다.
 보정 파라미터는 [leveling.yaml](livox_mid360/config/leveling.yaml)에서 설정합니다.
