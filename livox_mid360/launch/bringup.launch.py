@@ -109,7 +109,7 @@ def generate_launch_description():
         ("rviz", "true", "Start RViz"),
         ("imu_visualization", LaunchConfiguration("rviz"), "Publish IMU arrows and numeric values"),
         ("host_ip", "192.168.1.5", "IPv4 address assigned to the connected host NIC"),
-        ("lidar_ip", "192.168.1.12", "MID-360 IPv4 address; replace with actual device IP"),
+        ("lidar_ip", "192.168.1.136", "MID-360 IPv4 address; replace with actual device IP"),
         ("config_file", "", "Optional complete SDK JSON; overrides host_ip/lidar_ip"),
         ("publish_freq", "10.0", "Point cloud publication frequency in Hz"),
         ("points_topic", "/livox/lidar", "Raw PointCloud2 topic"),

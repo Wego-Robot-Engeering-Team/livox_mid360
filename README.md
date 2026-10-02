@@ -15,7 +15,7 @@ colcon build
 source install/setup.bash
 
 # NIC를 센서와 같은 서브넷에 설정하고 실제 IP로 교체. 모드는 하나씩 실행하며 초기화 중 정지.
-ros2 launch livox_mid360 bringup.launch.py host_ip:=192.168.1.5 lidar_ip:=192.168.1.12
-ros2 launch livox_mid360 leveled.launch.py host_ip:=192.168.1.5 lidar_ip:=192.168.1.12
+ros2 launch livox_mid360 bringup.launch.py host_ip:=192.168.1.5 lidar_ip:=192.168.1.136
+ros2 launch livox_mid360 leveled.launch.py host_ip:=192.168.1.5 lidar_ip:=192.168.1.136
 # 점별 timestamp가 없는 데이터는 leveled.launch.py에 deskew:=false 추가.
 ```
