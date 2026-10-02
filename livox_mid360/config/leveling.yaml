@@ -8,6 +8,10 @@ cloud_leveling_node:
     gravity: 9.80665
     acceleration_tolerance: 1.5
     correction_time_constant: 0.5
+    max_acceleration_innovation: 0.17  # radians, relative to gyro-predicted gravity
+    acceleration_change_threshold: 0.8  # m/s^2, after compensating sensor rotation
+    stationary_recovery_delay: 1.0
+    stationary_recovery_time_constant: 2.0
     initialization_samples: 50
     initialization_max_gyro: 0.15
     max_imu_gap: 0.1
@@ -15,3 +19,4 @@ cloud_leveling_node:
     max_sample_distance: 0.03
     cloud_wait_timeout: 0.2
     max_pending_clouds: 10
+    deskew: true  # rotation only; requires per-point timestamp in absolute nanoseconds

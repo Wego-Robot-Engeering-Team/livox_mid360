@@ -18,6 +18,7 @@ public:
     sensor_frame_ = declare_parameter("sensor_frame", std::string("livox_frame"));
     level_frame_ = declare_parameter("level_frame", std::string("livox_level"));
     acceleration_scale_ = declare_parameter("acceleration_scale", 9.80665);
+    deskew_ = declare_parameter("deskew", true);
     history_seconds_ = declare_parameter("history_seconds", 2.0);
     max_sample_distance_ = declare_parameter("max_sample_distance", 0.03);
     cloud_wait_timeout_ = declare_parameter("cloud_wait_timeout", 0.2);
@@ -59,6 +60,14 @@ private:
       "acceleration_tolerance", config.acceleration_tolerance);
     config.correction_time_constant = declare_parameter(
       "correction_time_constant", config.correction_time_constant);
+    config.max_acceleration_innovation = declare_parameter(
+      "max_acceleration_innovation", config.max_acceleration_innovation);
+    config.acceleration_change_threshold = declare_parameter(
+      "acceleration_change_threshold", config.acceleration_change_threshold);
+    config.stationary_recovery_delay = declare_parameter(
+      "stationary_recovery_delay", config.stationary_recovery_delay);
+    config.stationary_recovery_time_constant = declare_parameter(
+      "stationary_recovery_time_constant", config.stationary_recovery_time_constant);
     config.max_imu_gap = declare_parameter("max_imu_gap", config.max_imu_gap);
     config.initialization_max_gyro = declare_parameter(
       "initialization_max_gyro", config.initialization_max_gyro);
@@ -96,7 +105,7 @@ private:
     last_imu_stamp_ = stamp;
     const auto rotation = filter_.update(stamp, acceleration, gyro);
     if (!rotation) {return;}
-    history_.push_back({stamp, *rotation});
+    history_.push_back({stamp, *rotation, filter_.gyro_rotation()});
     while (history_.size() > 1 && (stamp - history_.front().stamp_ns) * 1e-9 > history_seconds_) {
       history_.pop_front();
     }
@@ -132,24 +141,40 @@ private:
         msg->header.frame_id.c_str(), sensor_frame_.c_str());
       return;
     }
+    const auto stamp = rclcpp::Time(msg->header.stamp).nanoseconds();
+    CloudTimeRange times{stamp, stamp};
+    std::string error;
+    if (deskew_ && !cloud_time_range(*msg, times, error)) {
+      ++dropped_;
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+        "Cannot deskew cloud: %s; use deskew:=false for clouds without point timestamps",
+        error.c_str());
+      return;
+    }
     if (pending_.size() >= max_pending_clouds_) {pending_.pop_front(); ++dropped_;}
-    pending_.push_back({std::move(msg), std::chrono::steady_clock::now()});
+    pending_.push_back({std::move(msg), std::chrono::steady_clock::now(), times});
     process_pending();
   }
 
   void process_pending() {
     const auto now = std::chrono::steady_clock::now();
     for (auto it = pending_.begin(); it != pending_.end();) {
-      const auto stamp = rclcpp::Time(it->cloud->header.stamp).nanoseconds();
+      const auto stamp = it->times.end_ns;
       const auto rotation = interpolate_attitude(history_, stamp, max_sample_distance_);
+      const auto start_rotation = interpolate_attitude(
+        history_, it->times.start_ns, max_sample_distance_);
       const bool expired = std::chrono::duration<double>(now - it->arrival).count() > cloud_wait_timeout_;
-      const bool too_old = !history_.empty() && stamp < history_.front().stamp_ns;
+      const bool too_old = !history_.empty() && it->times.start_ns < history_.front().stamp_ns;
       // Once history brackets a stamp, a failed interpolation means an IMU gap.
-      const bool gap = !history_.empty() && stamp < history_.back().stamp_ns && !rotation;
-      if (rotation) {
+      const bool gap = !history_.empty() && stamp <= history_.back().stamp_ns &&
+        (!rotation || !start_rotation);
+      if (rotation && start_rotation) {
         sensor_msgs::msg::PointCloud2 output;
         std::string error;
-        if (rotate_cloud(*it->cloud, *rotation, level_frame_, output, error)) {
+        const bool corrected = deskew_ ?
+          deskew_cloud(*it->cloud, history_, max_sample_distance_, level_frame_, output, error) :
+          rotate_cloud(*it->cloud, *rotation, level_frame_, output, error);
+        if (corrected) {
           cloud_pub_->publish(std::move(output));
           ++published_;
         } else {
@@ -169,9 +194,11 @@ private:
   struct PendingCloud {
     sensor_msgs::msg::PointCloud2::ConstSharedPtr cloud;
     std::chrono::steady_clock::time_point arrival;
+    CloudTimeRange times;
   };
   double max_imu_gap_ = 0.1;
   GravityFilter filter_;
+  bool deskew_;
   std::string sensor_frame_, level_frame_;
   double acceleration_scale_, history_seconds_, max_sample_distance_, cloud_wait_timeout_;
   std::size_t max_pending_clouds_;
