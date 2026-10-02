@@ -7,7 +7,7 @@ from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
-    launch_file = Path(get_package_share_directory("livox_mid360")) / "launch" / "mid360.launch.py"
+    launch_file = Path(get_package_share_directory("livox_mid360")) / "launch" / "bringup.launch.py"
     return LaunchDescription([
         DeclareLaunchArgument("leveling", default_value="true"),
         IncludeLaunchDescription(PythonLaunchDescriptionSource(str(launch_file)),
