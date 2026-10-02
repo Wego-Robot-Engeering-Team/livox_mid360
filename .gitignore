@@ -1,5 +1,5 @@
-/third_party/*
-!/third_party/COLCON_IGNORE
+/third_party/Livox-SDK2/
+/third_party/livox_ros_driver2/
 /build/
 /install/
 /log/

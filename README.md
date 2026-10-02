@@ -8,8 +8,8 @@ IMU로 추정한 기울기를 이용해 포인트클라우드를 실시간으로
 
 | 브랜치 | ROS 2 | 운영체제 | 내용 |
 | --- | --- | --- | --- |
-| [humble](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/tree/humble) | Humble | Ubuntu 22.04 | 소스, 빌드 스크립트, 실행·검증 안내 |
-| [jazzy](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/tree/jazzy) | Jazzy | Ubuntu 24.04 | 소스, 빌드 스크립트, 실행·검증 안내 |
+| [humble](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/tree/humble) | Humble | Ubuntu 22.04 | 소스, 실행·검증 안내 |
+| [jazzy](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/tree/jazzy) | Jazzy | Ubuntu 24.04 | 소스, 실행·검증 안내 |
 
 ## 구성
 
@@ -63,23 +63,19 @@ sensors_ws/
 │   ├── livox_mid360/                 # 센서별 Git 저장소, 루트에는 package.xml 없음
 │   │   ├── README.md
 │   │   ├── dependencies.repos
-│   │   ├── scripts/
 │   │   ├── livox_mid360/             # 우리가 만든 기능 패키지 하나
 │   │   │   ├── package.xml
 │   │   │   ├── CMakeLists.txt
-│   │   │   ├── src/
+│   │   │   ├── src/                 # 노드·보정 알고리즘·부하 측정 도구
 │   │   │   ├── include/livox_mid360/
 │   │   │   ├── launch/
 │   │   │   ├── config/
-│   │   │   └── test/
-│   │   ├── livox_ros_driver2/        # 공식 드라이버·SDK 빌드용 패키지
-│   │   │   ├── package.xml
-│   │   │   ├── CMakeLists.txt
-│   │   │   └── LICENSE
-│   │   └── third_party/             # 고정한 공식 원본 소스
-│   │       ├── COLCON_IGNORE
-│   │       ├── livox_ros_driver2/
-│   │       └── Livox-SDK2/
+│   │   │   └── test/                # colcon test로 실행하는 단위·ROS 연동 검증
+│   │   └── third_party/             # 공식 소스와 SDK·드라이버 빌드 설정
+│   │       ├── package.xml          # ROS 패키지 이름: livox_ros_driver2
+│   │       ├── CMakeLists.txt       # 공식 원본을 그대로 컴파일
+│   │       ├── livox_ros_driver2/   # 공식 드라이버 checkout
+│   │       └── Livox-SDK2/          # 공식 SDK checkout
 │   └── <다른 센서 저장소>/
 ├── build/
 ├── install/
@@ -89,10 +85,11 @@ sensors_ws/
 우리 노드와 설정·launch는 `livox_mid360` ROS 패키지 하나에서 관리합니다.
 센서 관련 소스와 공식 의존성은 모두 이 Git 저장소 디렉터리 안에 둡니다.
 공식 코드의 버전은 `.repos`의 커밋으로 고정하고 저장소 내부 `third_party`로 가져옵니다.
-`third_party/COLCON_IGNORE`를 제외한 두 패키지는 일반 `colcon` 탐색으로 발견됩니다.
+일반 `colcon` 탐색은 `livox_mid360/`과 `third_party/`를 각각 ROS 패키지로 발견합니다.
+`third_party` 자체가 패키지이므로 그 안의 공식 checkout을 중복 패키지로 탐색하지 않습니다.
 
-`livox_ros_driver2` 빌드용 패키지는 공식 C++·메시지 소스를 그대로 참조합니다.
-그 CMake에서 공식 SDK core를 함께 컴파일하고 SDK 타깃에 드라이버를 연결합니다.
+`third_party/CMakeLists.txt`와 `package.xml`은 우리가 관리하는 빌드 연결 설정입니다.
+공식 C++·메시지 소스를 그대로 참조하고 SDK core를 함께 컴파일해 드라이버에 연결합니다.
 SDK와 드라이버 라이브러리는 같은 `install/livox_ros_driver2` prefix에 설치되므로
 별도 SDK 설치, `/usr/local` 라이브러리 탐색, 추가 CMake 인자가 필요하지 않습니다.
 공식 원본의 빌드 스크립트나 manifest를 수정하지 않습니다.
@@ -106,10 +103,10 @@ ROS 2 Jazzy가 설치된 Ubuntu 24.04에서 실행합니다.
 source /opt/ros/jazzy/setup.bash
 cd ~/sensors_ws/src/livox_mid360
 sudo apt install python3-vcstool python3-colcon-common-extensions python3-rosdep
-./scripts/setup_dependencies.sh
+vcs import . < dependencies.repos
 # rosdep을 처음 사용하는 시스템에서는 sudo rosdep init을 한 번 수행합니다.
 rosdep update
-rosdep install --from-paths livox_mid360 livox_ros_driver2 \
+rosdep install --from-paths livox_mid360 third_party \
   --ignore-src --rosdistro jazzy -r -y
 ```
 
@@ -124,7 +121,6 @@ source install/setup.bash
 
 기본 빌드 타입은 Release입니다. SDK 샘플 실행 파일은 빌드하지 않습니다.
 SDK 빌드·설치에 sudo가 필요하지 않습니다. 추가 빌드 옵션은 표준 colcon 옵션을 사용합니다.
-`./scripts/build.sh`는 의존성 준비 후 같은 일반 `colcon build`를 실행하는 편의 명령입니다.
 Humble/Jazzy 전환 시에는 각 Ubuntu/ROS 환경에 별도 워크스페이스를 사용하거나
 해당 워크스페이스의 기존 `build`, `install`, `log`를 정리합니다.
 
@@ -191,8 +187,10 @@ intensity, tag, line, timestamp 등 XYZ 외 필드와 원본 stamp는 유지합�
 ## 검증
 
 ```bash
-cd ~/sensors_ws/src/livox_mid360
-ROS_DOMAIN_ID=86 ./scripts/test.sh
+source /opt/ros/jazzy/setup.bash
+cd ~/sensors_ws
+colcon test --packages-select livox_mid360 --return-code-on-test-failure
+colcon test-result --verbose
 ```
 
 핵심 알고리즘 단위 테스트 12개와 실제 ROS 프로세스를 대상으로 하는 합성 데이터 검증을 실행합니다.
@@ -201,7 +199,7 @@ ROS_DOMAIN_ID=86 ./scripts/test.sh
 
 ## 나중에 수행할 부하 비교
 
-보정 노드는 드라이버와 별도 프로세스입니다. `scripts/measure_process.py`로
+보정 노드는 드라이버와 별도 프로세스입니다. `ros2 run livox_mid360 measure_process`로
 노드 하나 또는 launch 프로세스와 그 자식들의 CPU·RSS를 CSV와 JSON으로 기록합니다.
 100% CPU는 코어 하나를 뜻하며, 여러 프로세스의 RSS 합에는 공유 페이지가 중복 포함될 수 있습니다.
 측정 간격 사이에 종료된 짧은 프로세스는 누락될 수 있습니다.
@@ -212,7 +210,7 @@ ROS_DOMAIN_ID=86 ./scripts/test.sh
 ros2 launch livox_mid360 raw.launch.py rviz:=false imu_visualization:=false \
   host_ip:=192.168.1.5 lidar_ip:=192.168.1.12 > /tmp/mid360-raw.log 2>&1 &
 launch_pid=$!
-python3 ~/sensors_ws/src/livox_mid360/scripts/measure_process.py \
+ros2 run livox_mid360 measure_process \
   --pid "$launch_pid" --warmup 5 --duration 60 \
   --output ~/sensors_ws/reports/raw.csv
 kill -INT "$launch_pid"

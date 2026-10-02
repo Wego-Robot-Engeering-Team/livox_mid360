@@ -13,7 +13,7 @@ from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Imu, PointCloud2, PointField
 
 
-def main():
+def test_leveling_integration():
     rclpy.init()
     node = rclpy.create_node("mid360_smoke_test")
     imu_pub = node.create_publisher(Imu, "/test/imu", qos_profile_sensor_data)
@@ -23,7 +23,7 @@ def main():
     subscription = node.create_subscription(PointCloud2, "/test/leveled", received.append, qos_profile_sensor_data)
     imu_subscription = node.create_subscription(Imu, "/test/orientation", orientations.append, qos_profile_sensor_data)
     process = subprocess.Popen([
-        "ros2", "run", "livox_mid360", "cloud_leveling_node", "--ros-args",
+        os.environ["LIVOX_LEVELING_EXECUTABLE"], "--ros-args",
         "-r", "points:=/test/points", "-r", "imu:=/test/imu",
         "-r", "points_leveled:=/test/leveled", "-r", "imu_orientation:=/test/orientation",
         "-p", "initialization_samples:=5",
@@ -109,7 +109,3 @@ def main():
         node.destroy_subscription(imu_subscription)
         node.destroy_node()
         rclpy.shutdown()
-
-
-if __name__ == "__main__":
-    main()
