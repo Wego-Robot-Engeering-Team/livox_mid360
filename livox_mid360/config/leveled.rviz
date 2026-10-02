@@ -1,0 +1,71 @@
+Panels:
+- Class: rviz_common/Displays
+  Name: Displays
+- Class: rviz_common/Views
+  Name: Views
+Visualization Manager:
+  Class: ''
+  Enabled: true
+  Global Options:
+    Background Color: 35; 35; 35
+    Fixed Frame: livox_level
+    Frame Rate: 30
+  Displays:
+  - Class: rviz_default_plugins/Grid
+    Name: Horizontal Grid
+    Enabled: true
+    Cell Size: 1
+    Plane: XY
+    Plane Cell Count: 20
+    Reference Frame: <Fixed Frame>
+  - Class: rviz_default_plugins/Axes
+    Name: Reference Axes
+    Enabled: true
+    Length: 1
+    Radius: 0.03
+  - Class: rviz_default_plugins/PointCloud2
+    Name: Leveled Points
+    Enabled: true
+    Topic:
+      Value: /livox/points_leveled
+      Reliability Policy: Best Effort
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Depth: 5
+    Position Transformer: XYZ
+    Color Transformer: Intensity
+    Channel Name: intensity
+    Style: Points
+    Size (Pixels): 2
+    Decay Time: 0.0
+  - Class: rviz_default_plugins/MarkerArray
+    Name: 'IMU: Green Acceleration / Pink Angular Velocity'
+    Enabled: true
+    Topic:
+      Value: /livox/imu_markers
+      Reliability Policy: Reliable
+      Durability Policy: Volatile
+      Depth: 10
+  - Class: rviz_default_plugins/TF
+    Name: Sensor Tilt
+    Enabled: true
+    Show Axes: true
+    Show Names: true
+  Tools:
+  - Class: rviz_default_plugins/Interact
+  - Class: rviz_default_plugins/MoveCamera
+  - Class: rviz_default_plugins/Select
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 12
+      Pitch: 0.65
+      Yaw: 0.8
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+      Target Frame: <Fixed Frame>
+Window Geometry:
+  Width: 1400
+  Height: 900

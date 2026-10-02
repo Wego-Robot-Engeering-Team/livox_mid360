@@ -1,0 +1,17 @@
+cloud_leveling_node:
+  ros__parameters:
+    sensor_frame: livox_frame
+    level_frame: livox_level
+    # Pinned upstream driver publishes acceleration in g, gyro in rad/s.
+    # Set acceleration_scale=1.0 for bag data already converted to m/s^2.
+    acceleration_scale: 9.80665
+    gravity: 9.80665
+    acceleration_tolerance: 1.5
+    correction_time_constant: 0.5
+    initialization_samples: 50
+    initialization_max_gyro: 0.15
+    max_imu_gap: 0.1
+    history_seconds: 2.0
+    max_sample_distance: 0.03
+    cloud_wait_timeout: 0.2
+    max_pending_clouds: 10
