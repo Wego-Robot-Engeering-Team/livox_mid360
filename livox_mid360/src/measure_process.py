@@ -7,7 +7,6 @@ import json
 import math
 import os
 from pathlib import Path
-import statistics
 import time
 
 
@@ -58,6 +57,9 @@ def main():
     if (args.pid <= 0 or args.duration <= 0 or args.interval <= 0 or args.warmup < 0
             or not all(math.isfinite(value) for value in (args.duration, args.interval, args.warmup))):
         parser.error("PID, duration and interval must be positive; warmup must be nonnegative")
+    summary_path = args.output.with_suffix(".json")
+    if summary_path == args.output:
+        parser.error("Output CSV and JSON summary must have different paths; use a .csv filename")
     identity = process_stats(args.pid)
     if not identity:
         parser.error("Target process does not exist")
@@ -111,20 +113,25 @@ def main():
         raise SystemExit("No samples collected: target exited during warmup or before first sample")
     total_time = rows[-1]["elapsed_s"]
     cpu_seconds = sum(entry["cpu_seconds"] for entry in per_process.values())
+    previous_elapsed = 0.0
+    rss_integral = 0.0
+    for row in rows:
+        rss_integral += row["rss_mib"] * (row["elapsed_s"] - previous_elapsed)
+        previous_elapsed = row["elapsed_s"]
     summary = {
         "root_pid": args.pid, "include_descendants": not args.single_process,
         "requested_duration_s": args.duration, "measured_duration_s": total_time,
         "warmup_s": args.warmup, "samples": len(rows),
         "cpu_percent_mean": cpu_seconds / total_time * 100,
         "cpu_percent_peak": max(row["cpu_percent"] for row in rows),
-        "rss_mib_mean": statistics.mean(row["rss_mib"] for row in rows),
+        "rss_mib_mean": rss_integral / total_time,
         "rss_mib_peak": max(row["rss_mib"] for row in rows),
         "cpu_definition": "100% equals one fully occupied CPU core; may exceed 100%",
         "memory_definition": "Sum of RSS; shared pages can be counted more than once",
         "sampling_limit": "Processes that start and exit between samples may be missed",
         "processes": list(per_process.values()),
     }
-    args.output.with_suffix(".json").write_text(json.dumps(summary, indent=2) + "\n")
+    summary_path.write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps({k: v for k, v in summary.items() if k != "processes"}, indent=2))
 
 

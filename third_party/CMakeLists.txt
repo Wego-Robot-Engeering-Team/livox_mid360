@@ -96,8 +96,6 @@ rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "livox_ros::DriverNode"
   EXECUTABLE livox_ros_driver2_node)
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
-install(DIRECTORY "${driver_source}/config" "${driver_source}/launch_ROS2"
-  DESTINATION share/${PROJECT_NAME})
 install(FILES "${driver_source}/LICENSE.txt"
   DESTINATION share/${PROJECT_NAME}/licenses RENAME livox_ros_driver2.txt)
 install(FILES "${sdk_source}/LICENSE.txt"

@@ -34,8 +34,8 @@ def _setup(context):
                 if any(float(extrinsic.get(axis, 0)) != 0 for axis in ("roll", "pitch", "yaw", "x", "y", "z")):
                     raise ValueError("Leveling requires zero driver extrinsic_parameter values")
         frequency = float(value("publish_freq"))
-        if not math.isfinite(frequency) or not 0 < frequency <= 100:
-            raise ValueError("publish_freq must be in (0, 100]")
+        if not math.isfinite(frequency) or not 0.5 <= frequency <= 100:
+            raise ValueError("publish_freq must be in [0.5, 100]")
         actions.append(Node(
             package="livox_ros_driver2", executable="livox_ros_driver2_node",
             name="livox_lidar_publisher", output="screen",
@@ -43,7 +43,6 @@ def _setup(context):
                 "xfer_format": 0, "multi_topic": 0, "data_src": 0,
                 "publish_freq": frequency, "output_data_type": 0,
                 "frame_id": "livox_frame", "user_config_path": config_path,
-                "lvx_file_path": "", "cmdline_input_bd_code": "livox0000000001",
                 "use_sim_time": _boolean(context, "use_sim_time"),
             }],
             remappings=[("livox/lidar", value("points_topic")), ("livox/imu", value("imu_topic"))],
@@ -86,11 +85,11 @@ def generate_launch_description():
         ("rviz", "true", "Start RViz"),
         ("imu_visualization", LaunchConfiguration("rviz"), "Publish IMU arrows and numeric values"),
         ("config_file", str(share / "config" / "MID360_config.json"), "Livox SDK configuration file"),
-        ("publish_freq", "10.0", "Point cloud publication frequency in Hz"),
+        ("publish_freq", "10.0", "Point cloud publication frequency in Hz (0.5-100)"),
         ("points_topic", "/livox/lidar", "Raw PointCloud2 topic"),
         ("imu_topic", "/livox/imu", "Raw IMU topic"),
         ("leveled_topic", "/livox/points_leveled", "Leveled PointCloud2 topic"),
-        ("acceleration_scale", "9.80665", "Raw acceleration to m/s^2 multiplier"),
+        ("acceleration_scale", "9.80665", "IMU g to m/s^2 multiplier; use 1.0 for data already in m/s^2"),
         ("leveling_config", str(share / "config" / "leveling.yaml"), "Leveling ROS parameter YAML"),
         ("rviz_config", "", "Optional custom RViz config for remapped topics/frames"),
         ("use_sim_time", "false", "Use clock from bag replay"),
