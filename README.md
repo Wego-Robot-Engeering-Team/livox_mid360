@@ -3,8 +3,8 @@
 Livox MID-360의 포인트클라우드와 내장 IMU를 수신하고, RViz에서 확인하며,
 IMU로 추정한 기울기를 이용해 포인트클라우드를 실시간으로 수평 보정하는 ROS 2 프로젝트입니다.
 
-이 브랜치는 **ROS 2 Jazzy / Ubuntu 24.04**용 개발 코드입니다.
-`main`은 프로젝트 안내만 관리하며 Humble 코드는 `humble` 브랜치에 있습니다.
+이 브랜치는 **ROS 2 Humble / Ubuntu 22.04**용 개발 코드입니다.
+`main`은 프로젝트 안내만 관리하며 Jazzy 코드는 `jazzy` 브랜치에 있습니다.
 
 | 브랜치 | ROS 2 | 운영체제 | 내용 |
 | --- | --- | --- | --- |
@@ -42,11 +42,11 @@ IMU로 추정한 기울기를 이용해 포인트클라우드를 실시간으로
 
 ```bash
 mkdir -p ~/sensors_ws/src
-git clone -b jazzy https://github.com/Wego-Robot-Engeering-Team/livox_mid360.git \
+git clone -b humble https://github.com/Wego-Robot-Engeering-Team/livox_mid360.git \
   ~/sensors_ws/src/livox_mid360
 ```
 
-Humble에서는 `-b humble`을 사용합니다.
+Jazzy에서는 `-b jazzy`를 사용합니다.
 
 ## 공식 자료
 
@@ -99,18 +99,18 @@ SDK와 드라이버 라이브러리는 같은 `install/livox_ros_driver2` prefix
 
 ## 빌드
 
-ROS 2 Jazzy가 설치된 Ubuntu 24.04에서 실행합니다.
+ROS 2 Humble가 설치된 Ubuntu 22.04에서 실행합니다.
 처음 한 번 공식 의존성을 다운로드하고 시스템 의존성을 설치합니다.
 
 ```bash
-source /opt/ros/jazzy/setup.bash
+source /opt/ros/humble/setup.bash
 cd ~/sensors_ws/src/livox_mid360
 sudo apt install python3-vcstool python3-colcon-common-extensions python3-rosdep
 ./scripts/setup_dependencies.sh
 # rosdep을 처음 사용하는 시스템에서는 sudo rosdep init을 한 번 수행합니다.
 rosdep update
 rosdep install --from-paths livox_mid360 livox_ros_driver2 \
-  --ignore-src --rosdistro jazzy -r -y
+  --ignore-src --rosdistro humble -r -y
 ```
 
 이후 워크스페이스 루트에서 일반 빌드를 사용합니다.
