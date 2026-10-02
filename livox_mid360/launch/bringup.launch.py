@@ -1,15 +1,12 @@
 """MID-360 acquisition, optional gravity leveling and RViz."""
 
-import ipaddress
 import json
 import math
 from pathlib import Path
-import tempfile
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction, RegisterEventHandler
-from launch.event_handlers import OnShutdown
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
@@ -27,29 +24,9 @@ def _setup(context):
     leveling = _boolean(context, "leveling")
     actions = []
     if _boolean(context, "driver"):
-        config_path = value("config_file")
-        if not config_path:
-            host_ip = str(ipaddress.IPv4Address(value("host_ip")))
-            lidar_ip = str(ipaddress.IPv4Address(value("lidar_ip")))
-            config = json.loads((share / "config" / "MID360_config.json").read_text())
-            for key in ("cmd_data_ip", "push_msg_ip", "point_data_ip", "imu_data_ip"):
-                config["MID360"]["host_net_info"][key] = host_ip
-            config["lidar_configs"][0]["ip"] = lidar_ip
-            with tempfile.NamedTemporaryFile(
-                mode="w", prefix="mid360_", suffix=".json", delete=False
-            ) as config_file:
-                json.dump(config, config_file, indent=2)
-                config_path = config_file.name
-
-            def cleanup(_context):
-                Path(config_path).unlink(missing_ok=True)
-                return []
-
-            actions.append(RegisterEventHandler(OnShutdown(on_shutdown=[OpaqueFunction(function=cleanup)])))
-        else:
-            config_path = str(Path(config_path).expanduser().resolve(strict=True))
-            config = json.loads(Path(config_path).read_text())
+        config_path = str(Path(value("config_file")).expanduser().resolve(strict=True))
         if leveling:
+            config = json.loads(Path(config_path).read_text())
             # The IMU remains in livox_frame; rotating points inside the driver
             # would break the shared coordinate convention used by our filter.
             for lidar in config["lidar_configs"]:
@@ -108,9 +85,7 @@ def generate_launch_description():
         ("driver", "true", "Start hardware driver; false for rosbag replay"),
         ("rviz", "true", "Start RViz"),
         ("imu_visualization", LaunchConfiguration("rviz"), "Publish IMU arrows and numeric values"),
-        ("host_ip", "192.168.1.5", "IPv4 address assigned to the connected host NIC"),
-        ("lidar_ip", "192.168.1.136", "MID-360 IPv4 address; replace with actual device IP"),
-        ("config_file", "", "Optional complete SDK JSON; overrides host_ip/lidar_ip"),
+        ("config_file", str(share / "config" / "MID360_config.json"), "Livox SDK configuration file"),
         ("publish_freq", "10.0", "Point cloud publication frequency in Hz"),
         ("points_topic", "/livox/lidar", "Raw PointCloud2 topic"),
         ("imu_topic", "/livox/imu", "Raw IMU topic"),
