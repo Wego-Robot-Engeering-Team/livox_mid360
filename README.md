@@ -62,12 +62,16 @@ Humble에서는 `-b humble`을 사용합니다.
 
 ```text
 sensors_ws/src/
-├── livox_mid360/
-│   ├── package.xml, CMakeLists.txt   # 우리 ROS 패키지 하나
-│   ├── src/, include/, test/
-│   ├── launch/, config/, scripts/
-│   ├── dependencies.repos
-│   └── third_party/
+├── livox_mid360/                     # Git 저장소, 루트에는 package.xml 없음
+│   ├── README.md, dependencies.repos, scripts/
+│   ├── livox_mid360/                 # 우리 기능 패키지
+│   │   ├── package.xml, CMakeLists.txt
+│   │   └── src/, include/, launch/, config/, test/
+│   ├── livox_ros_driver2/            # 공식 드라이버·SDK 빌드용 패키지
+│   │   ├── package.xml
+│   │   └── CMakeLists.txt
+│   └── third_party/                  # 공식 원본 소스
+│       ├── COLCON_IGNORE
 │       ├── livox_ros_driver2/
 │       └── Livox-SDK2/
 └── <다른 센서 저장소>/
@@ -76,4 +80,6 @@ sensors_ws/src/
 우리 노드는 `cloud_leveling_node`와 `imu_visualizer_node`입니다.
 패키지는 하나로 관리하고 프로세스는 따로 실행하므로 보정 노드의 추가 부하를 측정할 수 있습니다.
 외부 코드의 주소·커밋은 `.repos`에 기록하고 저장소 내부 `third_party`로 가져옵니다.
-빌드 스크립트가 SDK를 먼저 빌드하고 우리 패키지와 내부 드라이버 경로를 명시적으로 지정합니다.
+드라이버 빌드용 패키지가 공식 SDK와 드라이버 소스를 함께 빌드·설치합니다.
+초기 의존성 준비 후 `sensors_ws`에서 일반 `colcon build`를 사용합니다.
+자세한 의존성 준비와 실행·검증 절차는 각 개발 브랜치 README를 따릅니다.
