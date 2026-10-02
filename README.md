@@ -38,7 +38,7 @@ MID-360은 이동 로봇의 주변 인식에 사용하는 소형 3D 라이다입
 
 | 브랜치 | ROS 2 | 운영체제 | 안내 |
 | --- | --- | --- | --- |
-| `humble` | Humble | Ubuntu 22.04 | [설치·실행](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/blob/humble/README.md) |
-| `jazzy` | Jazzy | Ubuntu 24.04 | [설치·실행](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/blob/jazzy/README.md) |
+| `humble` | Humble | Ubuntu 22.04 | [설치·실행](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/tree/humble) |
+| `jazzy` | Jazzy | Ubuntu 24.04 | [설치·실행](https://github.com/Wego-Robot-Engeering-Team/livox_mid360/tree/jazzy) |
 
 공식 [Livox-SDK2](https://github.com/Livox-SDK/Livox-SDK2)와 [livox_ros_driver2](https://github.com/Livox-SDK/livox_ros_driver2)는 수정 없이 저장소 안의 `third_party/`에서 관리합니다. 각 개발 브랜치의 `dependencies.repos`에 지정된 커밋을 `vcstool`로 가져옵니다.
