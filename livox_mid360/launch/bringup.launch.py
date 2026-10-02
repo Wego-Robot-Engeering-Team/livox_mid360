@@ -93,7 +93,7 @@ def _setup(context):
         ))
     if _boolean(context, "rviz"):
         rviz_file = value("rviz_config") or str(
-            share / "config" / ("leveled.rviz" if leveling else "raw.rviz"))
+            share / "rviz" / ("leveled.rviz" if leveling else "raw.rviz"))
         actions.append(Node(package="rviz2", executable="rviz2", name="rviz2",
                             arguments=["-d", rviz_file], parameters=[common], output="screen"))
     return actions
