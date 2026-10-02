@@ -16,7 +16,8 @@ git clone -b jazzy https://github.com/Wego-Robot-Engeering-Team/livox_mid360.git
 cd ~/sensors_ws/src/livox_mid360
 vcs import . < dependencies.repos
 
-# ROS 의존성 설치 — rosdep 최초 사용 시 먼저 sudo rosdep init
+# ROS 의존성 설치 — rosdep은 최초 사용 시 자동 초기화
+[ -f /etc/ros/rosdep/sources.list.d/20-default.list ] || sudo rosdep init
 rosdep update
 rosdep install --from-paths livox_mid360 third_party --ignore-src --rosdistro jazzy -r -y
 
@@ -29,17 +30,19 @@ colcon build
 
 기본 설정은 PC `192.168.1.5/24`, 센서 `192.168.1.136`입니다. PC 이더넷 주소를 맞추고 전원·이더넷을 연결합니다.
 주소가 다르면 [SDK 설정](livox_mid360/config/MID360_config.json)의 `host_ip`(PC)와 `lidar_configs`의 `ip`(센서)를 수정하고 다시 빌드합니다.
-두 모드는 하나씩 실행하며, 보정 초기화 중에는 센서를 정지시켜 둡니다.
+아래 두 모드 중 하나만 실행합니다. 보정 초기화 중에는 센서를 정지시켜 둡니다.
 
 ```bash
-# 새 터미널에서 ROS 2와 빌드한 패키지 로드
+# 원본 점군·IMU 수신과 RViz — 새 터미널에서 실행
 source /opt/ros/jazzy/setup.bash
 source ~/sensors_ws/install/setup.bash
-
-# 원본 점군·IMU 수신과 RViz
 ros2 launch livox_mid360 bringup.launch.py
+```
 
-# 위 런치 종료 후: IMU 수평 보정·스캔 회전 보정과 RViz
+```bash
+# IMU 수평·스캔 회전 보정과 RViz — 기존 런치를 Ctrl+C로 종료한 뒤 실행
+source /opt/ros/jazzy/setup.bash
+source ~/sensors_ws/install/setup.bash
 ros2 launch livox_mid360 leveled.launch.py
 ```
 
